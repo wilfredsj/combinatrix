@@ -1,0 +1,5 @@
+source https://nuget.org/api/v2
+nuget FSharp.Core
+nuget System.ValueTuple
+nuget System.Net.Http
+nuget Suave

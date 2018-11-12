@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+
+<meta charset="utf-8" />
+
+<title>Fulmar</title>
+
+<script language="javascript" type="text/javascript">
+  var output;
+  var websocket = null
+  function init()
+  {
+    output = document.getElementById("output");
+    testWebSocket();
+  }
+  function testWebSocket()
+  {
+    var url = new URL('/websocket', window.location.href);
+    url.protocol = url.protocol.replace('http', 'ws');
+    websocket = new WebSocket(url.href);
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+  }
+  function onOpen(evt)
+  {
+    doSend(".!.|||.!.!!||");
+  }
+  function onClose(evt)
+  {
+    writeToScreen("Disconnected");
+  }
+  function onMessage(evt)
+  {
+    writeToScreen('<span style="color: blue;">' + evt.data+'</span>');
+  }
+  function onError(evt)
+  {
+    writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+  }
+  function doSend(message)
+  {
+    writeToScreen(">> " + message);
+    websocket.send(message);
+  }
+  function writeToScreen(message)
+  {
+    var pre = document.createElement("p");
+    pre.style.wordWrap = "break-word";
+    pre.innerHTML = message;
+    output.appendChild(pre);
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+  function sendComm() {
+      doSend(document.getElementById("textin").value)
+      document.getElementById("textin").value = ""
+      window.scrollTo(0, document.body.scrollHeight);
+  }
+  window.addEventListener("load", init, false);
+</script>
+
+<h2>Combinator Sandbox</h2>
+
+<div id="output"></div>
+<input id="textin" type="text" /><br>
+<button type="button" onclick="sendComm()">Try</button>
+
+<script language="javascript" type="text/javascript">
+  document.getElementById("textin").addEventListener("keyup", function (event) {
+      event.preventDefault();
+      if (event.keyCode === 13) {
+          sendComm();
+      }
+  });
+</script>
