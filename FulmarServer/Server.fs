@@ -21,7 +21,7 @@ open Fulmar.API
 
 // Taken from Suave Websockets sample
 
-let createWebsocket (getSession : WebSocket -> string) (webSocket : WebSocket) (context: HttpContext) =
+let createWebsocket (getSession : HttpContext -> WebSocket -> string) (webSocket : WebSocket) (context: HttpContext) =
   socket {
     let mutable loop = true
     
@@ -30,7 +30,8 @@ let createWebsocket (getSession : WebSocket -> string) (webSocket : WebSocket) (
       match msg with
       | (Text, data, true) ->
         let str = UTF8.toString data
-        let sess = getSession webSocket
+        let sess = getSession context webSocket
+        printfn "%s sent %s" sess str
         let output = userAction sess concatStringer str
         let byteResponse = 
           output.state 
@@ -41,7 +42,7 @@ let createWebsocket (getSession : WebSocket -> string) (webSocket : WebSocket) (
         do! webSocket.send Text byteResponse true
 
       | (Close, _, _) ->
-        let sess = getSession webSocket
+        let sess = getSession context webSocket
         printfn "Closed: Session #%s" sess
         let emptyResponse = [||] |> ByteSegment
         do! webSocket.send Close emptyResponse true
@@ -51,12 +52,13 @@ let createWebsocket (getSession : WebSocket -> string) (webSocket : WebSocket) (
 
 let mutable nextSession = 0L
 let sessionIds = new System.Collections.Generic.Dictionary<WebSocket, string>()
-let addSession (ws : WebSocket) = 
+let addSession (ctx : HttpContext) (ws : WebSocket) = 
   if sessionIds.ContainsKey ws then
     sessionIds.Item ws
   else 
     let sessionId = sprintf "||%i||" nextSession
-    printfn "Opened: Session #%s" sessionId
+    ctx.clientIpTrustProxy.ToString()
+    |> printfn "Opened: Session %s from %s" sessionId
     sessionIds.Item ws <- sessionId
     nextSession <- nextSession + 1L
     sessionId
