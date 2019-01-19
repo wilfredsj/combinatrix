@@ -1,4 +1,4 @@
-﻿namespace Fulmar
+namespace Fulmar
 
 module Types = 
   type KnownBird = { name : string; symbol : string; order : int }

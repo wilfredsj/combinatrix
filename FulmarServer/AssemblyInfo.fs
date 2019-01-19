@@ -1,4 +1,4 @@
-﻿namespace FulmarServer.AssemblyInfo
+namespace FulmarServer.AssemblyInfo
 
 open System.Reflection
 open System.Runtime.CompilerServices

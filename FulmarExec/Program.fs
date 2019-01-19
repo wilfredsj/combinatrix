@@ -1,4 +1,4 @@
-﻿module FulmarLauncher
+module FulmarLauncher
 
 open Fulmar.Types
 open Fulmar.API

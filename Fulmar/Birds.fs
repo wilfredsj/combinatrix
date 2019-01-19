@@ -1,4 +1,4 @@
-﻿namespace Fulmar
+namespace Fulmar
 
 open Fulmar.Types
 open Fulmar.Constructors
