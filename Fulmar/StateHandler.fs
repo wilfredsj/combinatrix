@@ -141,6 +141,7 @@ module StateHandler =
     let expr = ub.chain.current.expression
     let numArgs = (lastFree 0 expr) + 1
     let newBird = { name = newName; symbol = sym; order = numArgs }
+    let output' = logBird output newBird
     let birdEval = makeFunction numArgs expr
     let progress' = addBird progress newBird birdEval
     let (progress'', goal) = updateGoals ub progress'
@@ -153,7 +154,7 @@ module StateHandler =
         (enter, progress.text.newBirdPrompt)
     let text = doneText :: Option.toList goalText @ [promptText]
     text 
-    |> logStrings output
+    |> logStrings output'
     |> fun x -> (progress'', returnFunc x)
 
   let init progress output =
@@ -168,11 +169,14 @@ module StateHandler =
       |> List.tryFind(fun (a,b,c,lower, g) -> lower = i') 
       |> Option.map(fun (a,b,c,lower, g) -> (b, g))
       |> Option.defaultValue (easyFilter, easyTargets)
-    let progress' = 
+    let (progress', o) = 
       birdOperatorMap 
       |> Map.toList
       |> List.filter(fun (b,_) -> symbols |> List.contains(b.symbol))
-      |> List.fold(fun p (kb, eval) -> addBird p kb eval) nullProgress
+      |> List.fold(fun (p, oo) (kb, eval) -> 
+           let p' = addBird p kb eval
+           let o' = logBird oo kb
+           (p', o')) (nullProgress, output)
     let progress'' =
       goals
       |> List.collect(fun sym -> 
@@ -183,8 +187,7 @@ module StateHandler =
             else None)
           |> Option.toList)
       |> List.fold(addGoal) progress'
-
-    let o' = printInventory progress'' output
+    let o' = printInventory progress'' o
     let o'' = printGoals progress'' o'
     progress.text.newBirdPromptFirst
     |> logString o''

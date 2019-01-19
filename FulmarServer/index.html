@@ -32,7 +32,13 @@
   }
   function onMessage(evt)
   {
-    writeToScreen('<span style="color: blue;">' + evt.data+'</span>');
+    var obj = JSON.parse(evt.data)
+    if (obj.resp) {
+        writeToScreen('<span style="color: blue;">' + obj.resp + '</span>');
+    }
+    if (obj.inv) {
+        writeToInventory('<span style="color: purple;">' + obj.inv + '</span>');
+    }
   }
   function onError(evt)
   {
@@ -51,6 +57,12 @@
     output.appendChild(pre);
     window.scrollTo(0, document.body.scrollHeight);
   }
+  function writeToInventory(message) {
+      var pre = document.createElement("p");
+      pre.style.wordWrap = "break-word";
+      pre.innerHTML = message;
+      inventory.appendChild(pre);
+  }
   function sendComm() {
       doSend(document.getElementById("textin").value)
       document.getElementById("textin").value = ""
@@ -58,18 +70,38 @@
   }
   window.addEventListener("load", init, false);
 </script>
+<style>
+    .column {
+        float: left;
+        width: 50%;
+    }
+    .columninv {
+        position: sticky;
+        top: 0;
+        float: left;
+        width: 50%;
+    }
+
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+</style>
 
 <h2>Combinator Sandbox</h2>
-
-<div id="output"></div>
+<div class="row">
+    <div id="output" class="column"></div>
+    <div id="inventory" class="columninv"></div>
+</div>
 <input id="textin" type="text" /><br>
 <button type="button" onclick="sendComm()">Try</button>
 
 <script language="javascript" type="text/javascript">
-  document.getElementById("textin").addEventListener("keyup", function (event) {
-      event.preventDefault();
-      if (event.keyCode === 13) {
-          sendComm();
-      }
-  });
+document.getElementById("textin").addEventListener("keyup", function (event) {
+    event.preventDefault();
+    if (event.keyCode === 13) {
+        sendComm();
+    }
+});
 </script>

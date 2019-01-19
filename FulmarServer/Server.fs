@@ -17,6 +17,7 @@ open Suave.Sockets
 open Suave.Sockets.Control
 open Suave.WebSocket
 open Fulmar.API
+open Fulmar.Types
 
 
 // Taken from Suave Websockets sample
@@ -32,14 +33,41 @@ let createWebsocket (getSession : HttpContext -> WebSocket -> string) (webSocket
         let str = UTF8.toString data
         let sess = getSession context webSocket
         printfn "%s sent %s" sess str
-        let output = userAction sess concatStringer str
-        let byteResponse = 
-          output.state 
-          |> List.rev 
-          |> String.concat("<br><p>")
+        let output = userAction sess concatStringer str |> fun o -> o.state
+        let mutable responses : string list = []
+        let mutable newInventory : string list = []
+        output 
+        |> List.iter(
+          function
+          | StateMessage(s) -> responses <- s :: responses
+          | InventoryUpdate(kb) -> newInventory <- kb.name :: newInventory
+          | _ -> ()) 
+        let toString list =
+          if List.isEmpty list then
+            None
+          else
+            list |> String.concat("<br><p>") |> Some
+        let responseOpt = responses |> toString
+        let newInvStr = newInventory |> toString
+        let jsonify key value = sprintf "{\"%s\": \"%s\"}" key value
+        context.clientIpTrustProxy.ToString() |> printfn "IP = %s"
+
+        // the response needs to be converted to a ByteSegment
+        let toBytes key resp = 
+          resp
+          |> jsonify key
           |> System.Text.Encoding.ASCII.GetBytes
           |> ByteSegment
-        do! webSocket.send Text byteResponse true
+
+        match responseOpt with
+        | Some(response) ->
+          printfn "Response = %s" response
+          do! webSocket.send Text (toBytes "resp" response) true
+        | _ -> ()
+        match newInvStr with
+        | Some(inv) ->
+          do! webSocket.send Text (toBytes "inv" inv) true
+        | _ -> ()
 
       | (Close, _, _) ->
         let sess = getSession context webSocket

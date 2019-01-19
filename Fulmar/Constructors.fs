@@ -38,7 +38,11 @@ module Constructors =
       | b :: btail -> { head = Bird(b); tail = btail |> List.map(birdExpr) }
     expr |> toSolver
 
-  let consoleLogger = { state = (); logger = fun () s -> printfn "%s" s }
+  let consoleLogger = { state = (); logger = fun () s -> 
+    match s with
+    | StateMessage(s') -> printfn "%s" s'
+    | _ -> ()
+  }
   
   let private maybeAdd opt exp = 
     match opt with 

@@ -2,8 +2,8 @@
 
 open Fulmar.Types
 open Fulmar.API
+open Fulmar.Constructors
 
-let consoleLogger = { state = (); logger = fun () s -> printfn "%s" s }
       
 let consoleLoop2 =
   let rec consoleLoop' first = 
